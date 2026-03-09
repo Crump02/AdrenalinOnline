@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adrenalin Coaching — Coach Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,700;1,800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080808; --surface: #111111; --surface2: #181818; --surface3: #202020;
+    --border: #2a2a2a; --accent: #39e600; --accent-glow: rgba(57,230,0,0.18);
+    --accent2: #47c8ff; --accent3: #ff6b47; --text: #f2f2f2; --text2: #888888;
+    --text3: #4a4a4a; --green: #39e600; --red: #ff3344; --orange: #ff9900;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Barlow',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+  .app { display:flex; min-height:100vh; }
+  .sidebar { width:260px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:100; transition:transform 0.3s ease; box-shadow:2px 0 24px rgba(0,0,0,0.5); }
+  .sidebar-logo { padding:22px 24px 18px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,#0e1a0a 0%,#080808 100%); }
+  .sidebar-logo-inner { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .sidebar-logo h1 { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:800; font-style:italic; letter-spacing:1px; color:#fff; line-height:1.1; text-transform:uppercase; }
+  .sidebar-logo h1 span { color:var(--accent); }
+  .sidebar-logo .tagline { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:2.5px; font-weight:600; font-style:italic; }
+  .sidebar-nav { padding:16px 12px; flex:1; overflow-y:auto; }
+  .nav-section-label { font-size:10px; text-transform:uppercase; letter-spacing:2px; color:var(--text3); padding:12px 12px 6px; font-weight:600; }
+  .nav-btn { display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border:none; background:transparent; color:var(--text2); font-family:'Barlow',sans-serif; font-size:14px; font-weight:500; border-radius:8px; cursor:pointer; text-align:left; transition:all 0.15s; margin-bottom:2px; }
+  .nav-btn:hover { background:var(--surface2); color:var(--text); }
+  .nav-btn.active { background:var(--accent); color:#000; font-weight:700; }
+  .nav-btn .nav-icon { font-size:16px; width:20px; text-align:center; }
+  .client-list-sidebar { padding:0 12px 16px; }
+  .client-chip { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; cursor:pointer; transition:all 0.15s; margin-bottom:2px; }
+  .client-chip:hover { background:var(--surface2); }
+  .client-chip.active { background:var(--surface3); }
+  .client-avatar { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:800; font-style:italic; flex-shrink:0; }
+  .client-chip-info { flex:1; min-width:0; }
+  .client-chip-name { font-size:13px; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .client-chip-status { font-size:11px; color:var(--text3); }
+  .main { margin-left:260px; flex:1; display:flex; flex-direction:column; }
+  .topbar { position:sticky; top:0; z-index:50; background:rgba(13,13,15,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:16px 32px; display:flex; align-items:center; justify-content:space-between; }
+  .topbar-title { font-family:'Barlow Condensed',sans-serif; font-size:24px; letter-spacing:2px; color:var(--text); font-weight:700; font-style:italic; text-transform:uppercase; }
+  .topbar-actions { display:flex; gap:10px; }
+  .btn { padding:8px 18px; border-radius:8px; font-family:'Barlow',sans-serif; font-size:13px; font-weight:700; cursor:pointer; border:none; transition:all 0.15s; text-transform:uppercase; letter-spacing:0.5px; }
+  .btn-primary { background:var(--accent); color:#000; }
+  .btn-primary:hover { background:#44ff00; box-shadow:0 0 16px var(--accent-glow); transform:translateY(-1px); }
+  .btn-ghost { background:var(--surface2); color:var(--text2); border:1px solid var(--border); }
+  .btn-ghost:hover { background:var(--surface3); color:var(--text); }
+  .btn-danger { background:var(--red); color:#fff; }
+  .btn-danger:hover { opacity:0.85; }
+  .page { padding:32px; display:none; }
+  .page.active { display:block; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; margin-bottom:20px; }
+  .card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .card-title { font-family:'Barlow Condensed',sans-serif; font-size:20px; letter-spacing:1.5px; font-weight:700; font-style:italic; text-transform:uppercase; color:var(--text); }
+  .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; position:relative; overflow:hidden; }
+  .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+  .stat-card.yellow::before { background:var(--accent); }
+  .stat-card.blue::before { background:var(--accent2); }
+  .stat-card.orange::before { background:var(--orange); }
+  .stat-card.green::before { background:var(--green); }
+  .stat-label { font-size:11px; text-transform:uppercase; letter-spacing:2px; color:var(--text3); font-weight:600; margin-bottom:8px; }
+  .stat-value { font-family:'Barlow Condensed',sans-serif; font-size:42px; font-weight:700; font-style:italic; letter-spacing:1px; line-height:1; }
+  .stat-sub { font-size:12px; color:var(--text3); margin-top:4px; }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text3); font-weight:600; padding:8px 12px; border-bottom:1px solid var(--border); }
+  td { padding:12px; border-bottom:1px solid var(--border); font-size:14px; color:var(--text); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:var(--surface2); }
+  .mono { font-family:'DM Mono',monospace; font-size:13px; }
+  .badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+  .badge-green { background:rgba(57,230,0,0.15); color:var(--green); }
+  .badge-red { background:rgba(255,51,68,0.15); color:var(--red); }
+  .badge-orange { background:rgba(255,153,0,0.15); color:var(--orange); }
+  .badge-blue { background:rgba(71,200,255,0.15); color:var(--accent2); }
+  .badge-yellow { background:rgba(57,230,0,0.15); color:var(--accent); }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .form-group { margin-bottom:16px; }
+  .form-group.full { grid-column:1/-1; }
+  label { display:block; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--text3); margin-bottom:6px; }
+  input, select, textarea { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'Barlow',sans-serif; font-size:14px; padding:10px 14px; outline:none; transition:border-color 0.15s; }
+  input:focus, select:focus, textarea:focus { border-color:var(--accent); box-shadow:0 0 0 2px rgba(57,230,0,0.18); }
+  textarea { resize:vertical; min-height:80px; }
+  select option { background:var(--surface2); }
+  .tabs { display:flex; gap:4px; margin-bottom:24px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .tab-btn { padding:10px 18px; background:transparent; border:none; color:var(--text3); font-family:'Barlow',sans-serif; font-size:13px; font-weight:700; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all 0.15s; text-transform:uppercase; letter-spacing:1px; }
+  .tab-btn:hover { color:var(--text2); }
+  .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+  .empty-state { text-align:center; padding:60px 20px; color:var(--text3); }
+  .empty-state .empty-icon { font-size:48px; margin-bottom:16px; }
+  .empty-state p { font-size:14px; margin-bottom:20px; }
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:200; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:32px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; animation:modalIn 0.2s ease; }
+  @keyframes modalIn { from { opacity:0; transform:scale(0.95) translateY(10px); } to { opacity:1; transform:none; } }
+  .modal-title { font-family:'Barlow Condensed',sans-serif; font-size:26px; letter-spacing:2px; font-weight:800; font-style:italic; text-transform:uppercase; margin-bottom:24px; color:var(--accent); }
+  .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; }
+  .client-header { display:flex; align-items:center; gap:20px; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; margin-bottom:24px; }
+  .client-avatar-lg { width:64px; height:64px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-family:'Barlow Condensed',sans-serif; font-size:28px; font-weight:800; font-style:italic; flex-shrink:0; }
+  .client-header-info { flex:1; }
+  .client-header-name { font-family:'Barlow Condensed',sans-serif; font-size:30px; letter-spacing:1px; font-weight:800; font-style:italic; text-transform:uppercase; line-height:1; }
+  .client-header-meta { font-size:13px; color:var(--text3); margin-top:4px; }
+  .client-header-stats { display:flex; gap:24px; }
+  .client-header-stat { text-align:center; }
+  .client-header-stat-value { font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:700; font-style:italic; color:var(--accent); }
+  .client-header-stat-label { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; }
+  .checkin-card { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:12px; }
+  .checkin-date { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  .checkin-note { font-size:14px; color:var(--text); line-height:1.6; }
+  .lift-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); }
+  .lift-row:last-child { border-bottom:none; }
+  .lift-name { font-weight:600; font-size:14px; }
+  .lift-value { font-family:'DM Mono',monospace; font-size:13px; color:var(--accent); }
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-thumb { background:var(--surface3); border-radius:3px; }
+  .macro-row { display:flex; gap:12px; }
+  .macro-pill { flex:1; background:var(--surface2); border-radius:10px; padding:12px; text-align:center; }
+  .macro-pill-value { font-family:'Barlow Condensed',sans-serif; font-size:24px; font-weight:700; font-style:italic; }
+  .macro-pill-label { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
+  .habit-grid { display:flex; gap:6px; flex-wrap:wrap; }
+  .habit-dot { width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; }
+  .habit-dot.done { background:var(--green); color:#000; }
+  .habit-dot.missed { background:var(--surface3); color:var(--text3); }
+  .habit-dot.partial { background:var(--orange); color:#000; }
+  @media (max-width:900px) { .sidebar { transform:translateX(-260px); } .main { margin-left:0; } .stats-row { grid-template-columns:1fr 1fr; } .grid-2 { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-inner">
+        <svg width="38" height="28" viewBox="0 0 38 28" fill="none"><polyline points="0,14 8,14 12,4 17,24 22,2 27,18 31,14 38,14" stroke="#39e600" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
+        <div><h1>ADRENALIN<br><span>COACHING</span></h1></div>
+      </div>
+      <div class="tagline">Progression Not Perfection</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Navigation</div>
+      <button class="nav-btn active" onclick="showPage('overview')" id="nav-overview"><span class="nav-icon">⚡</span> Overview</button>
+      <button class="nav-btn" onclick="showPage('clients')" id="nav-clients"><span class="nav-icon">👥</span> All Clients</button>
+      <div class="nav-section-label" style="margin-top:8px">My Clients</div>
+    </nav>
+    <div class="client-list-sidebar" id="sidebar-client-list"></div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <span class="topbar-title" id="topbar-title">Overview</span>
+      <div class="topbar-actions" id="topbar-actions">
+        <button class="btn btn-primary" onclick="openModal('addClientModal')">+ Add Client</button>
+      </div>
+    </div>
+
+    <div class="page active" id="page-overview">
+      <div class="stats-row" id="overview-stats"></div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><span class="card-title">Recent Check-ins</span></div><div id="recent-checkins"></div></div>
+        <div class="card"><div class="card-header"><span class="card-title">Client Roster</span></div><div id="overview-client-list"></div></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-clients">
+      <div class="card">
+        <div class="card-header"><span class="card-title">All Clients</span><button class="btn btn-primary" onclick="openModal('addClientModal')">+ Add Client</button></div>
+        <table><thead><tr><th>Client</th><th>Goal</th><th>Sessions</th><th>Last Check-in</th><th>Status</th><th></th></tr></thead><tbody id="clients-table-body"></tbody></table>
+      </div>
+    </div>
+
+    <div class="page" id="page-client-detail">
+      <div class="client-header" id="client-detail-header"></div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-strength')">💪 Strength</button>
+        <button class="tab-btn" onclick="switchTab('tab-cardio')">🏃 Cardio</button>
+        <button class="tab-btn" onclick="switchTab('tab-nutrition')">🥗 Nutrition</button>
+        <button class="tab-btn" onclick="switchTab('tab-habits')">✅ Habits</button>
+        <button class="tab-btn" onclick="switchTab('tab-checkins')">📝 Check-ins</button>
+        <button class="tab-btn" onclick="switchTab('tab-training-plan')" style="color:var(--accent)">📋 Training Plan</button>
+        <button class="tab-btn" onclick="switchTab('tab-nutrition-plan')" style="color:var(--accent)">🥑 Nutrition Plan</button>
+      </div>
+
+      <div class="tab-content active" id="tab-strength">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Log Session</span></div>
+            <div class="form-group"><label>Exercise</label><input type="text" id="lift-exercise" placeholder="e.g. Back Squat"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+              <div class="form-group" style="margin:0"><label>Sets</label><input type="number" id="lift-sets" placeholder="4" min="1"></div>
+              <div class="form-group" style="margin:0"><label>Reps</label><input type="number" id="lift-reps" placeholder="8" min="1"></div>
+              <div class="form-group" style="margin:0"><label>Weight (kg)</label><input type="number" id="lift-weight" placeholder="80" min="0"></div>
+            </div>
+            <div class="form-group"><label>Date</label><input type="date" id="lift-date"></div>
+            <div class="form-group"><label>Notes</label><input type="text" id="lift-notes" placeholder="How did it feel?"></div>
+            <button class="btn btn-primary" style="width:100%" onclick="addLift()">Log Lift</button>
+          </div>
+          <div class="card"><div class="card-header"><span class="card-title">Recent Lifts</span></div><div id="lift-history"></div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-cardio">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Log Cardio</span></div>
+            <div class="form-group"><label>Type</label><select id="cardio-type"><option>Running</option><option>Cycling</option><option>Rowing</option><option>Swimming</option><option>HIIT</option><option>Walking</option><option>Other</option></select></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+              <div class="form-group" style="margin:0"><label>Duration (min)</label><input type="number" id="cardio-duration" placeholder="30" min="1"></div>
+              <div class="form-group" style="margin:0"><label>Distance (km)</label><input type="number" id="cardio-distance" placeholder="5" step="0.1"></div>
+            </div>
+            <div class="form-group"><label>Date</label><input type="date" id="cardio-date"></div>
+            <div class="form-group"><label>Notes</label><input type="text" id="cardio-notes" placeholder="Pace, effort, zones..."></div>
+            <button class="btn btn-primary" style="width:100%" onclick="addCardio()">Log Cardio</button>
+          </div>
+          <div class="card"><div class="card-header"><span class="card-title">Cardio History</span></div><div id="cardio-history"></div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-nutrition">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Log Nutrition</span></div>
+            <div class="form-group"><label>Date</label><input type="date" id="nutr-date"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+              <div class="form-group" style="margin:0"><label>Calories</label><input type="number" id="nutr-cals" placeholder="2000"></div>
+              <div class="form-group" style="margin:0"><label>Protein (g)</label><input type="number" id="nutr-protein" placeholder="160"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+              <div class="form-group" style="margin:0"><label>Carbs (g)</label><input type="number" id="nutr-carbs" placeholder="200"></div>
+              <div class="form-group" style="margin:0"><label>Fats (g)</label><input type="number" id="nutr-fats" placeholder="70"></div>
+            </div>
+            <div class="form-group"><label>Meal Quality</label><select id="nutr-quality"><option value="excellent">Excellent 🟢</option><option value="good">Good 🟡</option><option value="average" selected>Average 🟠</option><option value="poor">Poor 🔴</option></select></div>
+            <div class="form-group"><label>Notes</label><input type="text" id="nutr-notes" placeholder="Meal descriptions..."></div>
+            <button class="btn btn-primary" style="width:100%" onclick="addNutrition()">Log Nutrition</button>
+          </div>
+          <div class="card"><div class="card-header"><span class="card-title">Nutrition History</span></div><div id="nutrition-history"></div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-habits">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Log Daily Habits</span></div>
+            <div class="form-group"><label>Date</label><input type="date" id="habit-date"></div>
+            <div class="form-group"><label>Training completed?</label><select id="habit-training"><option value="done">✅ Yes, completed</option><option value="partial">⚡ Partial</option><option value="missed">❌ Missed</option></select></div>
+            <div class="form-group"><label>Nutrition on track?</label><select id="habit-nutrition"><option value="done">✅ Yes</option><option value="partial">⚡ Mostly</option><option value="missed">❌ Off track</option></select></div>
+            <div class="form-group"><label>Water intake</label><select id="habit-water"><option value="done">✅ 2L+</option><option value="partial">⚡ 1–2L</option><option value="missed">❌ Under 1L</option></select></div>
+            <div class="form-group"><label>Sleep (hours)</label><input type="number" id="habit-sleep" placeholder="7.5" step="0.5" min="0" max="12"></div>
+            <button class="btn btn-primary" style="width:100%" onclick="addHabit()">Log Habits</button>
+          </div>
+          <div class="card"><div class="card-header"><span class="card-title">Habit Tracker (Last 30 Days)</span></div><div id="habit-tracker-display"></div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-checkins">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Weekly Check-in</span></div>
+            <div class="form-group"><label>Date</label><input type="date" id="checkin-date"></div>
+            <div class="form-group"><label>Weight (kg)</label><input type="number" id="checkin-weight" placeholder="80.5" step="0.1"></div>
+            <div class="form-group"><label>Energy Level (1–10)</label><input type="number" id="checkin-energy" placeholder="7" min="1" max="10"></div>
+            <div class="form-group"><label>Stress Level (1–10)</label><input type="number" id="checkin-stress" placeholder="4" min="1" max="10"></div>
+            <div class="form-group"><label>Overall Mood (1–10)</label><input type="number" id="checkin-mood" placeholder="8" min="1" max="10"></div>
+            <div class="form-group"><label>Coach Notes</label><textarea id="checkin-notes" placeholder="Progress notes, adjustments, feedback..."></textarea></div>
+            <button class="btn btn-primary" style="width:100%" onclick="addCheckin()">Save Check-in</button>
+          </div>
+          <div class="card"><div class="card-header"><span class="card-title">Check-in History</span></div><div id="checkin-history"></div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-training-plan">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Set Training Plan</span></div>
+            <div class="form-group"><label>Plan Name</label><input type="text" id="tp-name" placeholder="e.g. 12-Week Strength Block"></div>
+            <div class="form-group"><label>Coach Notes / Overview</label><textarea id="tp-notes" placeholder="Goals, instructions, progression notes..."></textarea></div>
+            <div id="tp-days-builder"></div>
+            <button class="btn btn-ghost" style="width:100%;margin-bottom:10px" onclick="addPlanDay()">+ Add Day</button>
+            <button class="btn btn-primary" style="width:100%" onclick="saveTrainingPlan()">Save Plan to Client</button>
+          </div>
+          <div class="card"><div class="card-header"><span class="card-title">Current Plan Preview</span></div><div id="tp-preview"></div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-nutrition-plan">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Set Nutrition Plan</span></div>
+            <div class="form-group"><label>Plan Name</label><input type="text" id="np-name" placeholder="e.g. Cutting Phase Nutrition"></div>
+            <div class="form-group"><label>Overview / Instructions</label><textarea id="np-notes" placeholder="Eating windows, food quality notes, strategy..."></textarea></div>
+            <div id="np-meals-builder"></div>
+            <button class="btn btn-ghost" style="width:100%;margin-bottom:10px" onclick="addNutritionMeal()">+ Add Meal</button>
+            <button class="btn btn-primary" style="width:100%" onclick="saveNutritionPlan()">Save Plan to Client</button>
+          </div>
+          <div class="card"><div class="card-header"><span class="card-title">Current Plan Preview</span></div><div id="np-preview"></div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="addClientModal">
+  <div class="modal">
+    <div class="modal-title">New Client</div>
+    <div class="form-grid">
+      <div class="form-group"><label>First Name</label><input type="text" id="new-fname" placeholder="Alex"></div>
+      <div class="form-group"><label>Last Name</label><input type="text" id="new-lname" placeholder="Smith"></div>
+      <div class="form-group"><label>Age</label><input type="number" id="new-age" placeholder="28"></div>
+      <div class="form-group"><label>Gender</label><select id="new-gender"><option value="">Select...</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+      <div class="form-group full"><label>Primary Goal</label><select id="new-goal"><option>Build Muscle</option><option>Fat Loss</option><option>Improve Performance</option><option>General Fitness</option><option>Strength & Power</option><option>Endurance</option><option>Body Recomposition</option></select></div>
+      <div class="form-group"><label>Calorie Target</label><input type="number" id="new-cals" placeholder="2200"></div>
+      <div class="form-group"><label>Protein Target (g)</label><input type="number" id="new-protein" placeholder="170"></div>
+      <div class="form-group full"><label>Notes / Background</label><textarea id="new-notes" placeholder="Injuries, history, preferences..."></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('addClientModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addClient()">Add Client</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLORS = ['#39e600','#47c8ff','#ff6b47','#4dffa0','#c847ff','#ff47c8','#47ffd8','#ffd847'];
+let state = { clients:[], activeClientId:null };
+
+function save() { localStorage.setItem('forge_state', JSON.stringify(state)); }
+function load() { try { const s=localStorage.getItem('forge_state'); if(s) state=JSON.parse(s); } catch(e){} }
+
+load();
+if (!state.clients.length) seedDemoData();
+setDefaultDates();
+render();
+
+function seedDemoData() {
+  const today = new Date(); const fmt = d=>d.toISOString().split('T')[0]; const daysAgo = n=>{const d=new Date(today);d.setDate(d.getDate()-n);return fmt(d);};
+  state.clients = [
+    { id:'c1', fname:'Jordan', lname:'Lee', age:28, gender:'Male', goal:'Build Muscle', calsTarget:2800, proteinTarget:200, notes:'Ex-rugby player. Wants to add 5kg muscle.', color:COLORS[0], createdAt:daysAgo(30),
+      lifts:[{exercise:'Back Squat',sets:4,reps:6,weight:120,date:daysAgo(3),notes:'Felt strong'},{exercise:'Bench Press',sets:4,reps:8,weight:100,date:daysAgo(3),notes:''},{exercise:'Deadlift',sets:3,reps:5,weight:160,date:daysAgo(7),notes:'New PB!'}],
+      cardio:[{type:'Running',duration:30,distance:5,date:daysAgo(5),notes:'Easy run'}],
+      nutrition:[{date:daysAgo(1),cals:2750,protein:195,carbs:280,fats:80,quality:'good',notes:''},{date:daysAgo(2),cals:2900,protein:210,carbs:300,fats:85,quality:'excellent',notes:'Post leg day'}],
+      habits:[{date:daysAgo(1),training:'done',nutrition:'done',water:'done',sleep:7.5},{date:daysAgo(2),training:'done',nutrition:'done',water:'partial',sleep:6}],
+      checkins:[{date:daysAgo(7),weight:83.5,energy:8,stress:3,mood:8,notes:'Great week. Lifts up across the board.'},{date:daysAgo(14),weight:83.0,energy:7,stress:4,mood:7,notes:'Good progress.'}]
+    },
+    { id:'c2', fname:'Priya', lname:'Sharma', age:32, gender:'Female', goal:'Fat Loss', calsTarget:1800, proteinTarget:140, notes:'Desk job. Wants to lose 8kg.', color:COLORS[1], createdAt:daysAgo(45),
+      lifts:[{exercise:'Romanian Deadlift',sets:3,reps:10,weight:60,date:daysAgo(2),notes:''},{exercise:'Hip Thrust',sets:4,reps:12,weight:80,date:daysAgo(2),notes:'Glute focus'}],
+      cardio:[{type:'Cycling',duration:45,distance:15,date:daysAgo(1),notes:'Zone 2'},{type:'Walking',duration:40,distance:3.5,date:daysAgo(3),notes:'Evening walk'}],
+      nutrition:[{date:daysAgo(1),cals:1780,protein:138,carbs:150,fats:65,quality:'excellent',notes:''}],
+      habits:[{date:daysAgo(1),training:'done',nutrition:'done',water:'done',sleep:7},{date:daysAgo(2),training:'missed',nutrition:'partial',water:'partial',sleep:6.5}],
+      checkins:[{date:daysAgo(5),weight:71.2,energy:7,stress:5,mood:7,notes:'Down 0.8kg this week.'}]
+    }
+  ];
+  save();
+}
+
+function setDefaultDates() {
+  const today = new Date().toISOString().split('T')[0];
+  ['lift-date','cardio-date','nutr-date','habit-date','checkin-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
+}
+
+function render() { renderSidebarClients(); renderOverview(); renderClientsTable(); }
+
+function renderSidebarClients() {
+  const el = document.getElementById('sidebar-client-list');
+  if (!state.clients.length) { el.innerHTML='<div style="padding:0 12px;font-size:12px;color:var(--text3)">No clients yet</div>'; return; }
+  el.innerHTML = state.clients.map(c=>`<div class="client-chip ${state.activeClientId===c.id?'active':''}" onclick="openClient('${c.id}')"><div class="client-avatar" style="background:${c.color}20;color:${c.color}">${initials(c)}</div><div class="client-chip-info"><div class="client-chip-name">${c.fname} ${c.lname}</div><div class="client-chip-status">${c.goal}</div></div></div>`).join('');
+}
+
+function renderOverview() {
+  const total=state.clients.length;
+  const totalSessions=state.clients.reduce((s,c)=>s+(c.lifts||[]).length+(c.cardio||[]).length,0);
+  const totalCheckins=state.clients.reduce((s,c)=>s+(c.checkins||[]).length,0);
+  document.getElementById('overview-stats').innerHTML=`
+    <div class="stat-card yellow"><div class="stat-label">Total Clients</div><div class="stat-value" style="color:var(--accent)">${total}</div><div class="stat-sub">Active athletes</div></div>
+    <div class="stat-card blue"><div class="stat-label">Sessions Logged</div><div class="stat-value" style="color:var(--accent2)">${totalSessions}</div><div class="stat-sub">Across all clients</div></div>
+    <div class="stat-card green"><div class="stat-label">Check-ins</div><div class="stat-value" style="color:var(--green)">${totalCheckins}</div><div class="stat-sub">Weekly reviews</div></div>
+    <div class="stat-card orange"><div class="stat-label">Avg Compliance</div><div class="stat-value" style="color:var(--orange)">${calcAvgCompliance()}%</div><div class="stat-sub">Habit tracking</div></div>`;
+  let allCheckins=[];
+  state.clients.forEach(c=>(c.checkins||[]).forEach(ci=>allCheckins.push({...ci,client:c})));
+  allCheckins.sort((a,b)=>b.date.localeCompare(a.date));
+  const recentEl=document.getElementById('recent-checkins');
+  recentEl.innerHTML=allCheckins.length?allCheckins.slice(0,5).map(ci=>`<div class="checkin-card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div class="client-avatar" style="width:28px;height:28px;font-size:11px;background:${ci.client.color}20;color:${ci.client.color}">${initials(ci.client)}</div><span style="font-weight:600;font-size:13px">${ci.client.fname} ${ci.client.lname}</span><span class="checkin-date" style="margin:0;margin-left:auto">${formatDate(ci.date)}</span></div>${ci.weight?`<span style="font-size:12px;color:var(--accent)">⚖️ ${ci.weight}kg</span>`:''} ${ci.notes?`<div class="checkin-note" style="margin-top:6px">${ci.notes}</div>`:''}</div>`).join(''):'<div class="empty-state"><div class="empty-icon">📝</div><p>No check-ins yet</p></div>';
+  const ocl=document.getElementById('overview-client-list');
+  ocl.innerHTML=state.clients.length?state.clients.map(c=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openClient('${c.id}')"><div class="client-avatar" style="background:${c.color}20;color:${c.color}">${initials(c)}</div><div style="flex:1"><div style="font-weight:600;font-size:14px">${c.fname} ${c.lname}</div><div style="font-size:12px;color:var(--text3)">${c.goal}</div></div><span class="badge badge-green">${(c.lifts||[]).length+(c.cardio||[]).length} sessions</span></div>`).join(''):'<div class="empty-state"><p>Add your first client</p></div>';
+}
+
+function calcAvgCompliance() {
+  if (!state.clients.length) return 0;
+  let scores=[];
+  state.clients.forEach(c=>(c.habits||[]).forEach(h=>{let s=0;if(h.training==='done')s++;else if(h.training==='partial')s+=0.5;if(h.nutrition==='done')s++;else if(h.nutrition==='partial')s+=0.5;if(h.water==='done')s++;scores.push((s/3)*100);}));
+  if (!scores.length) return '--';
+  return Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+}
+
+function renderClientsTable() {
+  const tbody=document.getElementById('clients-table-body');
+  if (!state.clients.length) { tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">👥</div><p>No clients yet.</p></div></td></tr>`; return; }
+  tbody.innerHTML=state.clients.map(c=>{const lastCI=[...(c.checkins||[])].sort((a,b)=>b.date.localeCompare(a.date))[0];return`<tr style="cursor:pointer" onclick="openClient('${c.id}')"><td><div style="display:flex;align-items:center;gap:10px"><div class="client-avatar" style="background:${c.color}20;color:${c.color}">${initials(c)}</div><div><div style="font-weight:600">${c.fname} ${c.lname}</div><div style="font-size:12px;color:var(--text3)">${c.age?c.age+'y':''} ${c.gender||''}</div></div></div></td><td><span class="badge badge-yellow">${c.goal}</span></td><td class="mono">${(c.lifts||[]).length+(c.cardio||[]).length}</td><td style="color:var(--text3);font-size:13px">${lastCI?formatDate(lastCI.date):'Never'}</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-ghost" style="padding:5px 12px;font-size:12px" onclick="event.stopPropagation();deleteClient('${c.id}')">Remove</button></td></tr>`;}).join('');
+}
+
+function openClient(id) {
+  state.activeClientId=id; save();
+  const c=getClient(id);
+  renderSidebarClients(); showPage('client-detail');
+  const sessions=(c.lifts||[]).length+(c.cardio||[]).length;
+  const lastWeight=[...(c.checkins||[])].sort((a,b)=>b.date.localeCompare(a.date))[0]?.weight;
+  document.getElementById('client-detail-header').innerHTML=`<div class="client-avatar-lg" style="background:${c.color}20;color:${c.color}">${initials(c)}</div><div class="client-header-info"><div class="client-header-name">${c.fname} ${c.lname}</div><div class="client-header-meta">${c.age?c.age+' yrs · ':''}${c.gender||''} · Goal: ${c.goal}</div>${c.notes?`<div style="font-size:12px;color:var(--text3);margin-top:4px">${c.notes}</div>`:''}</div><div class="client-header-stats"><div class="client-header-stat"><div class="client-header-stat-value">${sessions}</div><div class="client-header-stat-label">Sessions</div></div><div class="client-header-stat"><div class="client-header-stat-value">${lastWeight||'--'}</div><div class="client-header-stat-label">Last Weight</div></div><div class="client-header-stat"><div class="client-header-stat-value">${c.calsTarget||'--'}</div><div class="client-header-stat-label">Cal Target</div></div><div class="client-header-stat"><div class="client-header-stat-value">${c.proteinTarget||'--'}g</div><div class="client-header-stat-label">Protein</div></div></div>`;
+  renderLiftHistory(); renderCardioHistory(); renderNutritionHistory(); renderHabitTracker(); renderCheckinHistory(); openClientPlans(); setDefaultDates();
+}
+
+function renderLiftHistory() {
+  const c=getClient(state.activeClientId); if(!c)return;
+  const el=document.getElementById('lift-history');
+  const lifts=[...(c.lifts||[])].sort((a,b)=>b.date.localeCompare(a.date));
+  if(!lifts.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🏋️</div><p>No lifts logged yet</p></div>';return;}
+  el.innerHTML=lifts.slice(0,10).map(l=>`<div class="lift-row"><div><div class="lift-name">${l.exercise}</div><div style="font-size:12px;color:var(--text3)">${l.date}${l.notes?' · '+l.notes:''}</div></div><div style="text-align:right"><div class="lift-value">${l.sets}×${l.reps} @ ${l.weight}kg</div><div style="font-size:11px;color:var(--text3)">${calcE1RM(l.weight,l.reps)} kg e1RM</div></div></div>`).join('');
+}
+
+function calcE1RM(w,r){return Math.round(w*(1+r/30)*10)/10;}
+
+function renderCardioHistory() {
+  const c=getClient(state.activeClientId); if(!c)return;
+  const el=document.getElementById('cardio-history');
+  const sessions=[...(c.cardio||[])].sort((a,b)=>b.date.localeCompare(a.date));
+  if(!sessions.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🏃</div><p>No cardio logged yet</p></div>';return;}
+  el.innerHTML=sessions.slice(0,8).map(s=>`<div class="lift-row"><div><div class="lift-name">${s.type}</div><div style="font-size:12px;color:var(--text3)">${s.date}${s.notes?' · '+s.notes:''}</div></div><div style="text-align:right"><div class="lift-value">${s.duration} min${s.distance?' · '+s.distance+'km':''}</div></div></div>`).join('');
+}
+
+function renderNutritionHistory() {
+  const c=getClient(state.activeClientId); if(!c)return;
+  const el=document.getElementById('nutrition-history');
+  const entries=[...(c.nutrition||[])].sort((a,b)=>b.date.localeCompare(a.date));
+  if(!entries.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🥗</div><p>No nutrition logged yet</p></div>';return;}
+  const qMap={excellent:'badge-green',good:'badge-blue',average:'badge-orange',poor:'badge-red'};
+  el.innerHTML=entries.slice(0,5).map(n=>`<div class="checkin-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:12px;color:var(--text3)">${formatDate(n.date)}</span><span class="badge ${qMap[n.quality]||'badge-orange'}">${n.quality||'average'}</span></div><div class="macro-row"><div class="macro-pill"><div class="macro-pill-value" style="color:var(--accent)">${n.cals}</div><div class="macro-pill-label">kcal</div></div><div class="macro-pill"><div class="macro-pill-value" style="color:var(--accent2)">${n.protein}g</div><div class="macro-pill-label">Protein</div></div><div class="macro-pill"><div class="macro-pill-value" style="color:var(--orange)">${n.carbs||'-'}g</div><div class="macro-pill-label">Carbs</div></div><div class="macro-pill"><div class="macro-pill-value" style="color:var(--green)">${n.fats||'-'}g</div><div class="macro-pill-label">Fats</div></div></div>${n.notes?`<div style="font-size:12px;color:var(--text3);margin-top:8px">${n.notes}</div>`:''}</div>`).join('');
+}
+
+function renderHabitTracker() {
+  const c=getClient(state.activeClientId); if(!c)return;
+  const el=document.getElementById('habit-tracker-display');
+  const habits=[...(c.habits||[])].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30);
+  if(!habits.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><p>No habits logged yet</p></div>';return;}
+  el.innerHTML=`<div style="margin-bottom:16px"><div style="font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Training</div><div class="habit-grid">${habits.map(h=>`<div class="habit-dot ${h.training}" title="${h.date}">${h.date.slice(5)}</div>`).join('')}</div></div><div style="margin-bottom:16px"><div style="font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Nutrition</div><div class="habit-grid">${habits.map(h=>`<div class="habit-dot ${h.nutrition}" title="${h.date}">${h.date.slice(5)}</div>`).join('')}</div></div><div><div style="font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Water</div><div class="habit-grid">${habits.map(h=>`<div class="habit-dot ${h.water}" title="${h.date}">${h.date.slice(5)}</div>`).join('')}</div></div>`;
+}
+
+function renderCheckinHistory() {
+  const c=getClient(state.activeClientId); if(!c)return;
+  const el=document.getElementById('checkin-history');
+  const checkins=[...(c.checkins||[])].sort((a,b)=>b.date.localeCompare(a.date));
+  if(!checkins.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📝</div><p>No check-ins yet</p></div>';return;}
+  el.innerHTML=checkins.map(ci=>`<div class="checkin-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="checkin-date">${formatDate(ci.date)}</div>${ci.weight?`<span style="font-family:'DM Mono',monospace;font-size:13px;color:var(--accent)">${ci.weight} kg</span>`:''}</div><div style="display:flex;gap:12px;margin-bottom:8px">${ci.energy?`<div style="text-align:center"><div style="font-size:11px;color:var(--text3)">Energy</div><div style="font-weight:700;color:var(--accent2)">${ci.energy}/10</div></div>`:''} ${ci.stress?`<div style="text-align:center"><div style="font-size:11px;color:var(--text3)">Stress</div><div style="font-weight:700;color:var(--red)">${ci.stress}/10</div></div>`:''} ${ci.mood?`<div style="text-align:center"><div style="font-size:11px;color:var(--text3)">Mood</div><div style="font-weight:700;color:var(--green)">${ci.mood}/10</div></div>`:''}</div>${ci.notes?`<div class="checkin-note">${ci.notes}</div>`:''}</div>`).join('');
+}
+
+function addClient() {
+  const fname=v('new-fname').trim(); const lname=v('new-lname').trim();
+  if(!fname){alert('Please enter a first name');return;}
+  const c={id:'c'+Date.now(),fname,lname,age:v('new-age')||'',gender:v('new-gender')||'',goal:v('new-goal'),calsTarget:v('new-cals')||'',proteinTarget:v('new-protein')||'',notes:v('new-notes'),color:COLORS[state.clients.length%COLORS.length],createdAt:new Date().toISOString().split('T')[0],lifts:[],cardio:[],nutrition:[],habits:[],checkins:[]};
+  state.clients.push(c); save(); closeModal('addClientModal');
+  ['new-fname','new-lname','new-age','new-gender','new-cals','new-protein','new-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  render();
+}
+
+function deleteClient(id) {
+  if(!confirm('Remove this client?'))return;
+  state.clients=state.clients.filter(c=>c.id!==id);
+  if(state.activeClientId===id){state.activeClientId=null;showPage('clients');}
+  save();render();
+}
+
+function addLift() {
+  const c=getClient(state.activeClientId); if(!c)return;
+  const exercise=v('lift-exercise').trim(); const sets=parseInt(v('lift-sets')); const reps=parseInt(v('lift-reps'));
+  if(!exercise||!sets||!reps){alert('Please fill in exercise, sets and reps');return;}
+  c.lifts=c.lifts||[]; c.lifts.push({exercise,sets,reps,weight:parseFloat(v('lift-weight'))||0,date:v('lift-date'),notes:v('lift-notes')});
+  save(); ['lift-exercise','lift-sets','lift-reps','lift-weight','lift-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); renderLiftHistory(); renderOverview();
+}
+
+function addCardio() {
+  const c=getClient(state.activeClientId); if(!c)return;
+  const duration=parseInt(v('cardio-duration')); if(!duration){alert('Please enter duration');return;}
+  c.cardio=c.cardio||[]; c.cardio.push({type:v('cardio-type'),duration,distance:parseFloat(v('cardio-distance'))||0,date:v('cardio-date'),notes:v('cardio-notes')});
+  save(); ['cardio-duration','cardio-distance','cardio-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); renderCardioHistory(); renderOverview();
+}
+
+function addNutrition() {
+  const c=getClient(state.activeClientId); if(!c)return;
+  const cals=parseInt(v('nutr-cals')); if(!cals){alert('Please enter calories');return;}
+  c.nutrition=c.nutrition||[]; c.nutrition.push({date:v('nutr-date'),cals,protein:parseInt(v('nutr-protein'))||0,carbs:parseInt(v('nutr-carbs'))||0,fats:parseInt(v('nutr-fats'))||0,quality:v('nutr-quality'),notes:v('nutr-notes')});
+  save(); ['nutr-cals','nutr-protein','nutr-carbs','nutr-fats','nutr-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); renderNutritionHistory();
+}
+
+function addHabit() {
+  const c=getClient(state.activeClientId); if(!c)return;
+  c.habits=c.habits||[]; c.habits.push({date:v('habit-date'),training:v('habit-training'),nutrition:v('habit-nutrition'),water:v('habit-water'),sleep:parseFloat(v('habit-sleep'))||0});
+  save(); document.getElementById('habit-sleep').value=''; renderHabitTracker(); renderOverview();
+}
+
+function addCheckin() {
+  const c=getClient(state.activeClientId); if(!c)return;
+  c.checkins=c.checkins||[]; c.checkins.push({date:v('checkin-date'),weight:parseFloat(v('checkin-weight'))||null,energy:parseInt(v('checkin-energy'))||null,stress:parseInt(v('checkin-stress'))||null,mood:parseInt(v('checkin-mood'))||null,notes:v('checkin-notes')});
+  save(); ['checkin-weight','checkin-energy','checkin-stress','checkin-mood','checkin-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); renderCheckinHistory(); renderOverview();
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name)?.classList.add('active');
+  const navEl=document.getElementById('nav-'+name); if(navEl)navEl.classList.add('active');
+  const titles={overview:'Overview',clients:'All Clients','client-detail':''};
+  const c=state.activeClientId?getClient(state.activeClientId):null;
+  document.getElementById('topbar-title').textContent=name==='client-detail'&&c?`${c.fname} ${c.lname}`:(titles[name]||'');
+  document.getElementById('topbar-actions').innerHTML=name==='clients'?'<button class="btn btn-primary" onclick="openModal(\'addClientModal\')">+ Add Client</button>':name==='overview'?'<button class="btn btn-primary" onclick="openModal(\'addClientModal\')">+ Add Client</button>':name==='client-detail'?'<button class="btn btn-ghost" onclick="showPage(\'clients\')">← All Clients</button>':'';
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(tabId)?.classList.add('active');
+  event.target.classList.add('active');
+}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
+
+let planDays=[], planMeals=[];
+
+function openClientPlans() {
+  const c=getClient(state.activeClientId); if(!c)return;
+  planDays=c.trainingPlan?JSON.parse(JSON.stringify(c.trainingPlan.days||[])):[];
+  planMeals=c.nutritionPlan?JSON.parse(JSON.stringify(c.nutritionPlan.meals||[])):[];
+  if(c.trainingPlan){document.getElementById('tp-name').value=c.trainingPlan.name||'';document.getElementById('tp-notes').value=c.trainingPlan.notes||'';}
+  if(c.nutritionPlan){document.getElementById('np-name').value=c.nutritionPlan.name||'';document.getElementById('np-notes').value=c.nutritionPlan.notes||'';}
+  renderPlanDaysBuilder(); renderNutritionMealsBuilder(); renderTPPreview(); renderNPPreview();
+}
+
+function addPlanDay(){planDays.push({label:'',type:'Training',notes:'',exercises:[]});renderPlanDaysBuilder();}
+function removePlanDay(i){planDays.splice(i,1);renderPlanDaysBuilder();}
+function addExercise(i){planDays[i].exercises=planDays[i].exercises||[];planDays[i].exercises.push({name:'',sets:'',reps:'',weight:'',notes:''});renderPlanDaysBuilder();}
+function removeExercise(i,j){planDays[i].exercises.splice(j,1);renderPlanDaysBuilder();}
+
+function renderPlanDaysBuilder() {
+  const el=document.getElementById('tp-days-builder'); if(!el)return;
+  if(!planDays.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;margin-bottom:12px;text-align:center">No days added yet.</div>';return;}
+  el.innerHTML=planDays.map((day,i)=>`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px"><div style="display:flex;gap:8px;margin-bottom:8px;align-items:center"><input type="text" placeholder="Day label (e.g. Mon - Push)" value="${day.label||''}" oninput="planDays[${i}].label=this.value" style="flex:1"><select onchange="planDays[${i}].type=this.value" style="width:110px"><option ${day.type==='Training'?'selected':''}>Training</option><option ${day.type==='rest'?'selected':''} value="rest">Rest Day</option><option ${day.type==='Cardio'?'selected':''}>Cardio</option><option ${day.type==='Active Recovery'?'selected':''}>Active Recovery</option></select><button class="btn btn-danger" style="padding:6px 10px;font-size:12px" onclick="removePlanDay(${i})">✕</button></div><input type="text" placeholder="Day notes (optional)" value="${day.notes||''}" oninput="planDays[${i}].notes=this.value" style="width:100%;margin-bottom:8px">${(day.exercises||[]).map((ex,j)=>`<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:6px;margin-bottom:6px;align-items:center"><input type="text" placeholder="Exercise" value="${ex.name||''}" oninput="planDays[${i}].exercises[${j}].name=this.value"><input type="text" placeholder="Sets" value="${ex.sets||''}" oninput="planDays[${i}].exercises[${j}].sets=this.value"><input type="text" placeholder="Reps" value="${ex.reps||''}" oninput="planDays[${i}].exercises[${j}].reps=this.value"><input type="text" placeholder="Weight" value="${ex.weight||''}" oninput="planDays[${i}].exercises[${j}].weight=this.value"><button onclick="removeExercise(${i},${j})" style="background:var(--surface3);border:1px solid var(--border);color:var(--text3);border-radius:6px;cursor:pointer;padding:6px 8px">✕</button></div>`).join('')}<button onclick="addExercise(${i})" style="background:none;border:1px dashed var(--border);color:var(--text3);border-radius:6px;padding:6px 12px;cursor:pointer;font-size:12px;width:100%;margin-top:2px">+ Add Exercise</button></div>`).join('');
+}
+
+function saveTrainingPlan() {
+  const c=getClient(state.activeClientId); if(!c)return;
+  c.trainingPlan={name:document.getElementById('tp-name')?.value||'',notes:document.getElementById('tp-notes')?.value||'',days:JSON.parse(JSON.stringify(planDays))};
+  save(); renderTPPreview(); alert('✅ Training plan saved!');
+}
+
+function renderTPPreview() {
+  const c=getClient(state.activeClientId); if(!c)return;
+  const el=document.getElementById('tp-preview'); if(!el)return;
+  const plan=c.trainingPlan;
+  if(!plan||!plan.days?.length){el.innerHTML='<div style="color:var(--text3);font-size:13px">No plan saved yet.</div>';return;}
+  el.innerHTML=`<div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;font-style:italic;color:var(--accent);margin-bottom:12px">${plan.name||'Untitled'}</div>${plan.notes?`<div style="font-size:12px;color:var(--text3);margin-bottom:12px">${plan.notes}</div>`:''}${(plan.days||[]).map(d=>`<div style="margin-bottom:10px"><div style="font-weight:700;font-size:13px;color:var(--text);margin-bottom:4px">${d.label||'Day'} <span class="badge ${d.type==='rest'?'badge-blue':'badge-green'}" style="margin-left:6px">${d.type}</span></div>${(d.exercises||[]).map(e=>`<div style="font-size:12px;color:var(--text3);padding:2px 0">${e.name} — ${e.sets}×${e.reps}${e.weight?' @ '+e.weight+'kg':''}</div>`).join('')}</div>`).join('')}`;
+}
+
+function addNutritionMeal(){planMeals.push({label:'',calories:'',notes:'',foods:[]});renderNutritionMealsBuilder();}
+function removeNutritionMeal(i){planMeals.splice(i,1);renderNutritionMealsBuilder();}
+function addFood(i){planMeals[i].foods=planMeals[i].foods||[];planMeals[i].foods.push({name:'',amount:''});renderNutritionMealsBuilder();}
+function removeFood(i,j){planMeals[i].foods.splice(j,1);renderNutritionMealsBuilder();}
+
+function renderNutritionMealsBuilder() {
+  const el=document.getElementById('np-meals-builder'); if(!el)return;
+  if(!planMeals.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;margin-bottom:12px;text-align:center">No meals added yet.</div>';return;}
+  el.innerHTML=planMeals.map((meal,i)=>`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px"><div style="display:flex;gap:8px;margin-bottom:8px;align-items:center"><input type="text" placeholder="Meal name" value="${meal.label||''}" oninput="planMeals[${i}].label=this.value" style="flex:1"><input type="number" placeholder="kcal" value="${meal.calories||''}" oninput="planMeals[${i}].calories=this.value" style="width:80px"><button class="btn btn-danger" style="padding:6px 10px;font-size:12px" onclick="removeNutritionMeal(${i})">✕</button></div><input type="text" placeholder="Meal notes" value="${meal.notes||''}" oninput="planMeals[${i}].notes=this.value" style="width:100%;margin-bottom:8px">${(meal.foods||[]).map((f,j)=>`<div style="display:grid;grid-template-columns:2fr 1fr auto;gap:6px;margin-bottom:6px;align-items:center"><input type="text" placeholder="Food item" value="${f.name||''}" oninput="planMeals[${i}].foods[${j}].name=this.value"><input type="text" placeholder="Amount" value="${f.amount||''}" oninput="planMeals[${i}].foods[${j}].amount=this.value"><button onclick="removeFood(${i},${j})" style="background:var(--surface3);border:1px solid var(--border);color:var(--text3);border-radius:6px;cursor:pointer;padding:6px 8px">✕</button></div>`).join('')}<button onclick="addFood(${i})" style="background:none;border:1px dashed var(--border);color:var(--text3);border-radius:6px;padding:6px 12px;cursor:pointer;font-size:12px;width:100%;margin-top:2px">+ Add Food</button></div>`).join('');
+}
+
+function saveNutritionPlan() {
+  const c=getClient(state.activeClientId); if(!c)return;
+  c.nutritionPlan={name:document.getElementById('np-name')?.value||'',notes:document.getElementById('np-notes')?.value||'',meals:JSON.parse(JSON.stringify(planMeals))};
+  save(); renderNPPreview(); alert('✅ Nutrition plan saved!');
+}
+
+function renderNPPreview() {
+  const c=getClient(state.activeClientId); if(!c)return;
+  const el=document.getElementById('np-preview'); if(!el)return;
+  const plan=c.nutritionPlan;
+  if(!plan||!plan.meals?.length){el.innerHTML='<div style="color:var(--text3);font-size:13px">No plan saved yet.</div>';return;}
+  el.innerHTML=`<div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;font-style:italic;color:var(--accent);margin-bottom:12px">${plan.name||'Untitled'}</div>${(plan.meals||[]).map(m=>`<div style="margin-bottom:10px"><div style="font-weight:700;font-size:13px;color:var(--text);margin-bottom:4px">${m.label||'Meal'}${m.calories?` <span style="color:var(--accent);font-size:12px">${m.calories} kcal</span>`:''}</div>${(m.foods||[]).map(f=>`<div style="font-size:12px;color:var(--text3);padding:2px 0">${f.name}${f.amount?' — '+f.amount:''}</div>`).join('')}</div>`).join('')}`;
+}
+
+function getClient(id){return state.clients.find(c=>c.id===id);}
+function v(id){return document.getElementById(id)?.value||'';}
+function initials(c){return((c.fname||'')[0]||'')+((c.lname||'')[0]||'');}
+function formatDate(d){if(!d)return'';try{return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d;}}
+</script>
+</body>
+</html>
