@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adrenalin Coaching — My Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,700;1,800&family=Barlow:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080808;
+    --surface: #111111;
+    --surface2: #181818;
+    --surface3: #222222;
+    --border: #2a2a2a;
+    --accent: #39e600;
+    --accent-dim: rgba(57,230,0,0.12);
+    --accent-glow: rgba(57,230,0,0.25);
+    --text: #f2f2f2;
+    --text2: #888;
+    --text3: #444;
+    --red: #ff3344;
+    --orange: #ff9900;
+    --blue: #47c8ff;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Barlow',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+  .login-screen {
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background: radial-gradient(ellipse at 50% 0%, rgba(57,230,0,0.07) 0%, transparent 60%), var(--bg);
+  }
+  .login-box { width:100%; max-width:380px; padding:0 20px; animation: fadeUp 0.5s ease both; }
+  .login-logo { text-align:center; margin-bottom:40px; }
+  .login-logo svg { margin-bottom:12px; }
+  .login-logo h1 { font-family:'Barlow Condensed',sans-serif; font-size:32px; font-weight:800; font-style:italic; text-transform:uppercase; line-height:1; color:#fff; }
+  .login-logo h1 span { color:var(--accent); }
+  .login-logo .tagline { font-size:11px; color:var(--text3); letter-spacing:3px; text-transform:uppercase; margin-top:6px; font-weight:600; }
+  .login-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:32px; margin-bottom:16px; }
+  .login-card h2 { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:700; font-style:italic; text-transform:uppercase; margin-bottom:6px; }
+  .login-card p { font-size:13px; color:var(--text2); margin-bottom:24px; }
+  .form-group { margin-bottom:16px; }
+  label { display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--text3); margin-bottom:6px; }
+  input, select, textarea { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:'Barlow',sans-serif; font-size:14px; padding:11px 14px; outline:none; transition:all 0.15s; }
+  input:focus, select:focus, textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-dim); }
+  textarea { resize:vertical; min-height:75px; }
+  .btn { width:100%; padding:13px; border:none; border-radius:10px; font-family:'Barlow Condensed',sans-serif; font-size:17px; font-weight:800; font-style:italic; text-transform:uppercase; letter-spacing:1px; cursor:pointer; transition:all 0.15s; }
+  .btn-primary { background:var(--accent); color:#000; }
+  .btn-primary:hover { background:#44ff00; box-shadow:0 0 20px var(--accent-glow); transform:translateY(-1px); }
+  .btn-sm { padding:8px 16px; border:none; border-radius:8px; font-family:'Barlow',sans-serif; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.15s; text-transform:uppercase; letter-spacing:0.5px; }
+  .btn-sm-primary { background:var(--accent); color:#000; }
+  .btn-sm-ghost { background:var(--surface2); color:var(--text2); border:1px solid var(--border); }
+  .client-select-grid { display:grid; gap:10px; margin-bottom:20px; }
+  .client-select-btn { display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:14px 16px; cursor:pointer; transition:all 0.15s; text-align:left; }
+  .client-select-btn:hover { border-color:var(--accent); background:var(--accent-dim); }
+  .client-select-avatar { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:800; font-style:italic; flex-shrink:0; }
+  .client-select-name { font-weight:700; font-size:15px; }
+  .client-select-goal { font-size:12px; color:var(--text3); }
+  .app-shell { display:none; flex-direction:column; min-height:100vh; }
+  .app-shell.visible { display:flex; }
+  .topnav { position:sticky; top:0; z-index:100; background:rgba(8,8,8,0.95); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); padding:0 20px; display:flex; align-items:center; gap:0; }
+  .topnav-logo { display:flex; align-items:center; gap:8px; padding:14px 0; margin-right:auto; text-decoration:none; }
+  .topnav-logo h1 { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:800; font-style:italic; text-transform:uppercase; color:#fff; line-height:1; }
+  .topnav-logo h1 span { color:var(--accent); }
+  .topnav-greeting { font-size:13px; color:var(--text3); font-weight:600; margin-right:16px; }
+  .topnav-greeting strong { color:var(--accent); }
+  .topnav-logout { background:none; border:none; color:var(--text3); font-family:'Barlow',sans-serif; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px; cursor:pointer; padding:6px 10px; border-radius:6px; transition:all 0.15s; }
+  .topnav-logout:hover { color:var(--red); }
+  .bottomnav { position:fixed; bottom:0; left:0; right:0; z-index:100; background:rgba(8,8,8,0.97); backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; padding-bottom:env(safe-area-inset-bottom, 0px); }
+  .bottomnav-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:10px 4px; background:none; border:none; cursor:pointer; transition:all 0.15s; color:var(--text3); }
+  .bottomnav-btn.active { color:var(--accent); }
+  .bottomnav-icon { font-size:20px; line-height:1; }
+  .bottomnav-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+  .page { display:none; padding:20px 20px 100px; max-width:640px; margin:0 auto; width:100%; animation:fadeUp 0.25s ease both; }
+  .page.active { display:block; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:16px; }
+  .card-title { font-family:'Barlow Condensed',sans-serif; font-size:19px; font-weight:700; font-style:italic; text-transform:uppercase; letter-spacing:1px; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+  .card-title .dot { width:8px; height:8px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+  .hero-stats { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+  .hero-stat { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 16px; position:relative; overflow:hidden; }
+  .hero-stat::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:var(--accent); transform:scaleX(0); transform-origin:left; transition:transform 0.4s ease; }
+  .hero-stat.loaded::after { transform:scaleX(1); }
+  .hero-stat-label { font-size:10px; text-transform:uppercase; letter-spacing:2px; color:var(--text3); font-weight:700; margin-bottom:6px; }
+  .hero-stat-value { font-family:'Barlow Condensed',sans-serif; font-size:34px; font-weight:800; font-style:italic; line-height:1; color:var(--accent); }
+  .hero-stat-sub { font-size:12px; color:var(--text3); margin-top:3px; }
+  .macro-bars { display:grid; gap:10px; }
+  .macro-bar-row { display:flex; align-items:center; gap:10px; }
+  .macro-bar-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; width:60px; flex-shrink:0; }
+  .macro-bar-track { flex:1; background:var(--surface3); border-radius:4px; height:8px; overflow:hidden; }
+  .macro-bar-fill { height:100%; border-radius:4px; transition:width 0.6s ease; }
+  .macro-bar-value { font-family:'DM Mono',sans-serif; font-size:12px; color:var(--text2); width:60px; text-align:right; flex-shrink:0; }
+  .plan-day { background:var(--surface2); border:1px solid var(--border); border-radius:12px; margin-bottom:10px; overflow:hidden; }
+  .plan-day-header { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; cursor:pointer; user-select:none; }
+  .plan-day-header:hover { background:var(--surface3); }
+  .plan-day-title { font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:700; font-style:italic; text-transform:uppercase; }
+  .plan-day-body { padding:0 16px 14px; display:none; }
+  .plan-day-body.open { display:block; }
+  .plan-exercise { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); font-size:14px; }
+  .plan-exercise:last-child { border-bottom:none; }
+  .plan-exercise-name { font-weight:600; }
+  .plan-exercise-sets { font-family:'DM Mono',sans-serif; font-size:12px; color:var(--accent); }
+  .habit-row { margin-bottom:14px; }
+  .habit-row-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--text3); margin-bottom:6px; }
+  .habit-dots { display:flex; gap:5px; flex-wrap:wrap; }
+  .habit-dot { width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; }
+  .habit-dot.done { background:rgba(57,230,0,0.2); color:var(--accent); border:1px solid rgba(57,230,0,0.3); }
+  .habit-dot.partial { background:rgba(255,153,0,0.2); color:var(--orange); border:1px solid rgba(255,153,0,0.3); }
+  .habit-dot.missed { background:var(--surface3); color:var(--text3); border:1px solid var(--border); }
+  .checkin-item { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin-bottom:10px; }
+  .checkin-item-date { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; font-weight:700; }
+  .checkin-item-metrics { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:8px; }
+  .checkin-metric { text-align:center; }
+  .checkin-metric-value { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:700; font-style:italic; }
+  .checkin-metric-label { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; }
+  .coach-note { background:var(--accent-dim); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:10px 12px; margin-top:8px; font-size:13px; line-height:1.6; color:var(--text2); }
+  .coach-note-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--accent); margin-bottom:4px; }
+  .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .section-title { font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:800; font-style:italic; text-transform:uppercase; letter-spacing:1px; }
+  .empty { text-align:center; padding:40px 20px; color:var(--text3); }
+  .empty-icon { font-size:40px; margin-bottom:10px; }
+  .empty p { font-size:14px; }
+  .badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+  .badge-green { background:rgba(57,230,0,0.15); color:var(--accent); }
+  .badge-orange { background:rgba(255,153,0,0.15); color:var(--orange); }
+  .badge-blue { background:rgba(71,200,255,0.15); color:var(--blue); }
+  .form-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:#000; font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:800; font-style:italic; text-transform:uppercase; padding:10px 24px; border-radius:30px; opacity:0; transition:all 0.3s ease; z-index:999; white-space:nowrap; pointer-events:none; box-shadow:0 4px 20px var(--accent-glow); }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-thumb { background:var(--surface3); border-radius:3px; }
+</style>
+</head>
+<body>
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <svg width="50" height="36" viewBox="0 0 50 36" fill="none">
+        <polyline points="0,18 10,18 15,5 22,31 29,2 36,23 41,18 50,18" stroke="#39e600" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
+      </svg>
+      <h1>ADRENALIN<br><span>COACHING</span></h1>
+      <div class="tagline">Progression Not Perfection</div>
+    </div>
+    <div class="login-card">
+      <h2>Welcome Back</h2>
+      <p>Select your profile to access your training portal</p>
+      <div class="client-select-grid" id="clientSelectGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="app-shell" id="appShell">
+  <nav class="topnav">
+    <div class="topnav-logo">
+      <svg width="28" height="20" viewBox="0 0 28 20" fill="none">
+        <polyline points="0,10 6,10 9,3 13,17 17,1 21,13 24,10 28,10" stroke="#39e600" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
+      </svg>
+      <h1>ADRENALIN <span>COACHING</span></h1>
+    </div>
+    <span class="topnav-greeting">Hi, <strong id="clientFirstName">—</strong></span>
+    <button class="topnav-logout" onclick="logout()">Exit</button>
+  </nav>
+
+  <div class="page active" id="page-home">
+    <div style="margin-bottom:20px;padding-top:4px">
+      <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:4px">Your Dashboard</div>
+      <div id="homeClientName" style="font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:800;font-style:italic;text-transform:uppercase;line-height:1"></div>
+      <div id="homeClientGoal" style="font-size:14px;color:var(--text3);margin-top:3px"></div>
+    </div>
+    <div class="hero-stats" id="heroStats"></div>
+    <div class="card" id="targetsCard" style="display:none">
+      <div class="card-title"><span class="dot"></span>Your Targets</div>
+      <div class="macro-bars" id="targetsMacros"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Today's Focus</div>
+      <div id="todayFocus"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Latest Coach Note</div>
+      <div id="latestCoachNote"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-plan">
+    <div class="section-header"><div class="section-title">Training Plan</div></div>
+    <div id="trainingPlanContent"></div>
+  </div>
+
+  <div class="page" id="page-nutrition-plan">
+    <div class="section-header"><div class="section-title">Nutrition Plan</div></div>
+    <div id="nutritionPlanContent"></div>
+  </div>
+
+  <div class="page" id="page-log">
+    <div class="section-title" style="margin-bottom:20px">Log Today</div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Log Workout</div>
+      <div class="form-group"><label>Exercise</label><input type="text" id="log-exercise" placeholder="e.g. Back Squat"></div>
+      <div class="form-grid-2">
+        <div class="form-group"><label>Sets</label><input type="number" id="log-sets" placeholder="4" min="1"></div>
+        <div class="form-group"><label>Reps</label><input type="number" id="log-reps" placeholder="8" min="1"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label>Weight (kg)</label><input type="number" id="log-weight" placeholder="80"></div>
+        <div class="form-group"><label>Date</label><input type="date" id="log-lift-date"></div>
+      </div>
+      <div class="form-group"><label>How did it feel?</label><input type="text" id="log-notes" placeholder="Strong, tired, PR..."></div>
+      <button class="btn btn-primary" onclick="clientAddLift()">Save Lift ↗</button>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Log Nutrition</div>
+      <div class="form-grid-2">
+        <div class="form-group"><label>Calories</label><input type="number" id="log-cals" placeholder="2000"></div>
+        <div class="form-group"><label>Protein (g)</label><input type="number" id="log-protein" placeholder="160"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label>Carbs (g)</label><input type="number" id="log-carbs" placeholder="200"></div>
+        <div class="form-group"><label>Fats (g)</label><input type="number" id="log-fats" placeholder="70"></div>
+      </div>
+      <div class="form-group"><label>Meal Quality</label><select id="log-quality"><option value="excellent">Excellent 🟢</option><option value="good">Good 🟡</option><option value="average" selected>Average 🟠</option><option value="poor">Poor 🔴</option></select></div>
+      <div class="form-group"><label>Date</label><input type="date" id="log-nutr-date"></div>
+      <button class="btn btn-primary" onclick="clientAddNutrition()">Save Nutrition ↗</button>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Log Daily Habits</div>
+      <div class="form-group"><label>Date</label><input type="date" id="log-habit-date"></div>
+      <div class="form-group"><label>Training completed?</label><select id="log-habit-training"><option value="done">✅ Yes, completed</option><option value="partial">⚡ Partial</option><option value="missed">❌ Missed</option></select></div>
+      <div class="form-group"><label>Nutrition on track?</label><select id="log-habit-nutrition"><option value="done">✅ Yes</option><option value="partial">⚡ Mostly</option><option value="missed">❌ Off track</option></select></div>
+      <div class="form-group"><label>Water intake</label><select id="log-habit-water"><option value="done">✅ 2L+</option><option value="partial">⚡ 1–2L</option><option value="missed">❌ Under 1L</option></select></div>
+      <div class="form-group"><label>Sleep (hours)</label><input type="number" id="log-habit-sleep" placeholder="7.5" step="0.5" min="0" max="12"></div>
+      <button class="btn btn-primary" onclick="clientAddHabit()">Save Habits ↗</button>
+    </div>
+  </div>
+
+  <div class="page" id="page-checkin">
+    <div class="section-title" style="margin-bottom:20px">Weekly Check-in</div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>This Week's Check-in</div>
+      <div class="form-group"><label>Date</label><input type="date" id="ci-date"></div>
+      <div class="form-grid-2">
+        <div class="form-group"><label>Weight (kg)</label><input type="number" id="ci-weight" placeholder="80.5" step="0.1"></div>
+        <div class="form-group"><label>Energy (1–10)</label><input type="number" id="ci-energy" placeholder="7" min="1" max="10"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label>Stress (1–10)</label><input type="number" id="ci-stress" placeholder="4" min="1" max="10"></div>
+        <div class="form-group"><label>Mood (1–10)</label><input type="number" id="ci-mood" placeholder="8" min="1" max="10"></div>
+      </div>
+      <div class="form-group"><label>How was your week?</label><textarea id="ci-notes" placeholder="Training wins, struggles, how you're feeling..."></textarea></div>
+      <button class="btn btn-primary" onclick="clientAddCheckin()">Submit Check-in ↗</button>
+    </div>
+    <div class="section-header" style="margin-top:8px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;font-style:italic;text-transform:uppercase">Past Check-ins</div>
+    </div>
+    <div id="checkinHistoryList"></div>
+    <div class="card" style="margin-top:8px">
+      <div class="card-title"><span class="dot"></span>Habit Tracker</div>
+      <div id="clientHabitTracker"></div>
+    </div>
+  </div>
+
+  <nav class="bottomnav">
+    <button class="bottomnav-btn active" onclick="switchPage('home',this)"><span class="bottomnav-icon">⚡</span><span class="bottomnav-label">Home</span></button>
+    <button class="bottomnav-btn" onclick="switchPage('plan',this)"><span class="bottomnav-icon">📋</span><span class="bottomnav-label">Training</span></button>
+    <button class="bottomnav-btn" onclick="switchPage('nutrition-plan',this)"><span class="bottomnav-icon">🥗</span><span class="bottomnav-label">Nutrition</span></button>
+    <button class="bottomnav-btn" onclick="switchPage('log',this)"><span class="bottomnav-icon">✏️</span><span class="bottomnav-label">Log</span></button>
+    <button class="bottomnav-btn" onclick="switchPage('checkin',this)"><span class="bottomnav-icon">📝</span><span class="bottomnav-label">Check-in</span></button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let coachState = null;
+let activeClient = null;
+
+function loadCoachState() {
+  try { const s = localStorage.getItem('forge_state'); if (s) coachState = JSON.parse(s); } catch(e) {}
+  if (!coachState) coachState = { clients: [] };
+}
+function saveCoachState() { localStorage.setItem('forge_state', JSON.stringify(coachState)); }
+function getClient(id) { return coachState.clients.find(c => c.id === id); }
+
+loadCoachState();
+renderLoginScreen();
+setDefaultDates();
+
+function renderLoginScreen() {
+  const grid = document.getElementById('clientSelectGrid');
+  const clients = coachState.clients || [];
+  if (!clients.length) { grid.innerHTML = '<div class="empty"><div class="empty-icon">👤</div><p>No clients found.<br>Add clients in the coach dashboard first.</p></div>'; return; }
+  grid.innerHTML = clients.map(c => `
+    <button class="client-select-btn" onclick="loginAs('${c.id}')">
+      <div class="client-select-avatar" style="background:${c.color}20;color:${c.color}">${initials(c)}</div>
+      <div><div class="client-select-name">${c.fname} ${c.lname}</div><div class="client-select-goal">${c.goal}</div></div>
+    </button>`).join('');
+}
+
+function loginAs(id) {
+  activeClient = getClient(id);
+  if (!activeClient) return;
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appShell').classList.add('visible');
+  document.getElementById('clientFirstName').textContent = activeClient.fname;
+  renderHome(); renderTrainingPlan(); renderNutritionPlan(); renderCheckinHistory(); renderHabitTracker(); setDefaultDates();
+}
+
+function logout() {
+  activeClient = null;
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('appShell').classList.remove('visible');
+  loadCoachState(); renderLoginScreen();
+}
+
+function renderHome() {
+  const c = activeClient;
+  document.getElementById('homeClientName').textContent = `${c.fname} ${c.lname}`;
+  document.getElementById('homeClientGoal').textContent = `Goal: ${c.goal}`;
+  const totalSessions = (c.lifts||[]).length + (c.cardio||[]).length;
+  const lastCheckin = [...(c.checkins||[])].sort((a,b)=>b.date.localeCompare(a.date))[0];
+  const compliance = calcCompliance(c);
+  document.getElementById('heroStats').innerHTML = `
+    <div class="hero-stat loaded"><div class="hero-stat-label">Sessions</div><div class="hero-stat-value">${totalSessions}</div><div class="hero-stat-sub">Total logged</div></div>
+    <div class="hero-stat loaded"><div class="hero-stat-label">Weight</div><div class="hero-stat-value">${lastCheckin?.weight ? lastCheckin.weight+'kg' : '--'}</div><div class="hero-stat-sub">Last check-in</div></div>
+    <div class="hero-stat loaded"><div class="hero-stat-label">Compliance</div><div class="hero-stat-value">${compliance}%</div><div class="hero-stat-sub">Habit score</div></div>
+    <div class="hero-stat loaded"><div class="hero-stat-label">Check-ins</div><div class="hero-stat-value">${(c.checkins||[]).length}</div><div class="hero-stat-sub">Submitted</div></div>`;
+  const targetsCard = document.getElementById('targetsCard');
+  if (c.calsTarget || c.proteinTarget) {
+    targetsCard.style.display = 'block';
+    const lastNutr = [...(c.nutrition||[])].sort((a,b)=>b.date.localeCompare(a.date))[0];
+    document.getElementById('targetsMacros').innerHTML =
+      (c.calsTarget ? macroBar('Calories', lastNutr?.cals||0, c.calsTarget, '#39e600', 'kcal') : '') +
+      (c.proteinTarget ? macroBar('Protein', lastNutr?.protein||0, c.proteinTarget, '#47c8ff', 'g') : '');
+  }
+  const plan = c.trainingPlan;
+  const todayEl = document.getElementById('todayFocus');
+  if (plan && plan.days && plan.days.length) {
+    const dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date().getDay()];
+    const todayDay = plan.days.find(d => d.label && d.label.toLowerCase().includes(dow.toLowerCase()));
+    if (todayDay) {
+      todayEl.innerHTML = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;font-style:italic;text-transform:uppercase;color:var(--accent);margin-bottom:8px">${todayDay.label}</div>
+        ${(todayDay.exercises||[]).slice(0,3).map(e=>`<div class="plan-exercise"><span class="plan-exercise-name">${e.name}</span><span class="plan-exercise-sets">${e.sets}×${e.reps}${e.weight?' @ '+e.weight+'kg':''}</span></div>`).join('')}
+        ${(todayDay.exercises||[]).length>3?`<div style="font-size:12px;color:var(--text3);margin-top:8px">+${(todayDay.exercises||[]).length-3} more</div>`:''}`;
+    } else { todayEl.innerHTML = `<div style="color:var(--text3);font-size:14px">Rest day — recovery is part of the process 💪</div>`; }
+  } else { todayEl.innerHTML = `<div style="color:var(--text3);font-size:13px">No training plan set yet. Your coach will add one soon.</div>`; }
+  const noteEl = document.getElementById('latestCoachNote');
+  const ci = [...(c.checkins||[])].sort((a,b)=>b.date.localeCompare(a.date))[0];
+  if (ci && ci.notes) {
+    noteEl.innerHTML = `<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px">${formatDate(ci.date)}</div><div class="coach-note"><div class="coach-note-label">Coach Notes</div>${ci.notes}</div>`;
+  } else { noteEl.innerHTML = `<div style="color:var(--text3);font-size:13px">No notes yet. Keep showing up!</div>`; }
+}
+
+function macroBar(label, current, target, color, unit) {
+  const pct = Math.min(100, Math.round((current/target)*100));
+  return `<div class="macro-bar-row"><div class="macro-bar-label" style="color:${color}">${label}</div><div class="macro-bar-track"><div class="macro-bar-fill" style="width:${pct}%;background:${color}"></div></div><div class="macro-bar-value">${current}/${target}${unit}</div></div>`;
+}
+
+function calcCompliance(c) {
+  const habits = c.habits||[];
+  if (!habits.length) return '--';
+  const scores = habits.map(h => { let s=0; if(h.training==='done')s++;else if(h.training==='partial')s+=0.5; if(h.nutrition==='done')s++;else if(h.nutrition==='partial')s+=0.5; if(h.water==='done')s++; return(s/3)*100; });
+  return Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+}
+
+function renderTrainingPlan() {
+  const c = activeClient; const el = document.getElementById('trainingPlanContent'); const plan = c.trainingPlan;
+  if (!plan) { el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><p>Your coach hasn't set your training plan yet.</p></div>`; return; }
+  el.innerHTML = `
+    ${plan.name?`<div class="card" style="background:var(--accent-dim);border-color:rgba(57,230,0,0.2)"><div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;font-style:italic;text-transform:uppercase;color:var(--accent)">${plan.name}</div>${plan.notes?`<div style="font-size:13px;color:var(--text2);margin-top:6px;line-height:1.6">${plan.notes}</div>`:''}</div>`:''}
+    ${(plan.days||[]).map((day,i)=>`<div class="plan-day"><div class="plan-day-header" onclick="togglePlanDay('pday${i}')"><div class="plan-day-title">${day.label||'Day '+(i+1)}</div><span class="badge ${day.type==='rest'?'badge-blue':'badge-green'}">${day.type||'Training'}</span></div><div class="plan-day-body" id="pday${i}">${day.notes?`<div style="font-size:13px;color:var(--text2);margin-bottom:10px;line-height:1.6">${day.notes}</div>`:''} ${(day.exercises||[]).map(e=>`<div class="plan-exercise"><div><div class="plan-exercise-name">${e.name}</div>${e.notes?`<div style="font-size:11px;color:var(--text3)">${e.notes}</div>`:''}</div><div class="plan-exercise-sets">${e.sets}×${e.reps}${e.weight?' @ '+e.weight+'kg':''}</div></div>`).join('')}${day.type==='rest'?`<div style="color:var(--text3);font-size:13px;padding:4px 0">Rest & recover.</div>`:''}</div></div>`).join('')}`;
+}
+
+function renderNutritionPlan() {
+  const c = activeClient; const el = document.getElementById('nutritionPlanContent'); const plan = c.nutritionPlan;
+  if (!plan) { el.innerHTML = `<div class="empty"><div class="empty-icon">🥗</div><p>Your coach hasn't set your nutrition plan yet.</p></div>`; return; }
+  el.innerHTML = `
+    <div class="card" style="background:var(--accent-dim);border-color:rgba(57,230,0,0.2)"><div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;font-style:italic;text-transform:uppercase;color:var(--accent)">${plan.name||'Nutrition Plan'}</div>${plan.notes?`<div style="font-size:13px;color:var(--text2);margin-top:6px;line-height:1.6">${plan.notes}</div>`:''}</div>
+    ${(c.calsTarget||c.proteinTarget)?`<div class="card"><div class="card-title"><span class="dot"></span>Daily Targets</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${c.calsTarget?`<div style="background:var(--surface2);border-radius:10px;padding:14px;text-align:center"><div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;font-style:italic;color:var(--accent)">${c.calsTarget}</div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">Calories</div></div>`:''}${c.proteinTarget?`<div style="background:var(--surface2);border-radius:10px;padding:14px;text-align:center"><div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;font-style:italic;color:var(--blue)">${c.proteinTarget}g</div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">Protein</div></div>`:''}</div></div>`:''}
+    ${(plan.meals||[]).map((meal,i)=>`<div class="plan-day"><div class="plan-day-header" onclick="togglePlanDay('nmeal${i}')"><div class="plan-day-title">${meal.label||'Meal '+(i+1)}</div>${meal.calories?`<span class="badge badge-green">${meal.calories} kcal</span>`:''}</div><div class="plan-day-body" id="nmeal${i}">${meal.notes?`<div style="font-size:13px;color:var(--text2);margin-bottom:10px;line-height:1.6">${meal.notes}</div>`:''} ${(meal.foods||[]).map(f=>`<div class="plan-exercise"><div class="plan-exercise-name">${f.name}</div><div class="plan-exercise-sets">${f.amount||''}</div></div>`).join('')}</div></div>`).join('')}`;
+}
+
+function togglePlanDay(id) { document.getElementById(id)?.classList.toggle('open'); }
+
+function clientAddLift() {
+  const c = activeClient; const exercise = gv('log-exercise').trim(); const sets = parseInt(gv('log-sets')); const reps = parseInt(gv('log-reps'));
+  if (!exercise||!sets||!reps) { toast('Fill in exercise, sets & reps'); return; }
+  c.lifts = c.lifts||[]; c.lifts.push({exercise,sets,reps,weight:parseFloat(gv('log-weight'))||0,date:gv('log-lift-date'),notes:gv('log-notes')});
+  saveCoachState(); ['log-exercise','log-sets','log-reps','log-weight','log-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); renderHome(); toast('Lift logged! 💪');
+}
+
+function clientAddNutrition() {
+  const c = activeClient; const cals = parseInt(gv('log-cals'));
+  if (!cals) { toast('Enter your calories'); return; }
+  c.nutrition = c.nutrition||[]; c.nutrition.push({date:gv('log-nutr-date'),cals,protein:parseInt(gv('log-protein'))||0,carbs:parseInt(gv('log-carbs'))||0,fats:parseInt(gv('log-fats'))||0,quality:gv('log-quality'),notes:''});
+  saveCoachState(); ['log-cals','log-protein','log-carbs','log-fats'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); renderHome(); toast('Nutrition saved! 🥗');
+}
+
+function clientAddHabit() {
+  const c = activeClient; c.habits = c.habits||[];
+  c.habits.push({date:gv('log-habit-date'),training:gv('log-habit-training'),nutrition:gv('log-habit-nutrition'),water:gv('log-habit-water'),sleep:parseFloat(gv('log-habit-sleep'))||0});
+  saveCoachState(); document.getElementById('log-habit-sleep').value=''; renderHome(); renderHabitTracker(); toast('Habits logged! ✅');
+}
+
+function clientAddCheckin() {
+  const c = activeClient; c.checkins = c.checkins||[];
+  c.checkins.push({date:gv('ci-date'),weight:parseFloat(gv('ci-weight'))||null,energy:parseInt(gv('ci-energy'))||null,stress:parseInt(gv('ci-stress'))||null,mood:parseInt(gv('ci-mood'))||null,notes:gv('ci-notes')});
+  saveCoachState(); ['ci-weight','ci-energy','ci-stress','ci-mood','ci-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); renderHome(); renderCheckinHistory(); toast('Check-in submitted! 📝');
+}
+
+function renderCheckinHistory() {
+  const c = activeClient; const el = document.getElementById('checkinHistoryList');
+  const checkins = [...(c.checkins||[])].sort((a,b)=>b.date.localeCompare(a.date));
+  if (!checkins.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📝</div><p>No check-ins yet.</p></div>'; return; }
+  el.innerHTML = checkins.map(ci=>`<div class="checkin-item"><div class="checkin-item-date">${formatDate(ci.date)}</div><div class="checkin-item-metrics">${ci.weight?`<div class="checkin-metric"><div class="checkin-metric-value" style="color:var(--accent)">${ci.weight}kg</div><div class="checkin-metric-label">Weight</div></div>`:''} ${ci.energy?`<div class="checkin-metric"><div class="checkin-metric-value" style="color:var(--blue)">${ci.energy}/10</div><div class="checkin-metric-label">Energy</div></div>`:''} ${ci.mood?`<div class="checkin-metric"><div class="checkin-metric-value" style="color:var(--accent)">${ci.mood}/10</div><div class="checkin-metric-label">Mood</div></div>`:''} ${ci.stress?`<div class="checkin-metric"><div class="checkin-metric-value" style="color:var(--orange)">${ci.stress}/10</div><div class="checkin-metric-label">Stress</div></div>`:''}</div>${ci.notes?`<div class="coach-note"><div class="coach-note-label">Coach Notes</div>${ci.notes}</div>`:''}</div>`).join('');
+}
+
+function renderHabitTracker() {
+  const c = activeClient; const el = document.getElementById('clientHabitTracker');
+  const habits = [...(c.habits||[])].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,21);
+  if (!habits.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><p>Log your daily habits to see your consistency</p></div>'; return; }
+  const dotRow = (label,key) => `<div class="habit-row"><div class="habit-row-label">${label}</div><div class="habit-dots">${habits.map(h=>`<div class="habit-dot ${h[key]}" title="${h.date}">${h.date.slice(5)}</div>`).join('')}</div></div>`;
+  el.innerHTML = dotRow('Training','training') + dotRow('Nutrition','nutrition') + dotRow('Water','water');
+}
+
+function switchPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.bottomnav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name)?.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function gv(id) { return document.getElementById(id)?.value||''; }
+function initials(c) { return ((c.fname||'')[0]||'')+((c.lname||'')[0]||''); }
+function formatDate(d) { if(!d)return''; try{return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d;} }
+function setDefaultDates() {
+  const today = new Date().toISOString().split('T')[0];
+  ['log-lift-date','log-nutr-date','log-habit-date','ci-date'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=today;});
+}
+let toastTimer;
+function toast(msg) { const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2200); }
+</script>
+</body>
+</html>
